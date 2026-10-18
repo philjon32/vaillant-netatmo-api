@@ -13,12 +13,14 @@ class Home:
         rooms: list[dict] = [],
         therm_mode: str | None = None,
         therm_setpoint_default_duration: int | None = None,
+        timezone: str | None = None,
         **kwargs,
     ) -> None:
         """Create new home model."""
 
         self.id = id
         self.name = name
+        self.timezone = timezone
         self.rooms = [Room(**room) for room in rooms]
         self.therm_mode = _parse_enum(ThermMode, therm_mode)
         self.therm_setpoint_default_duration = therm_setpoint_default_duration

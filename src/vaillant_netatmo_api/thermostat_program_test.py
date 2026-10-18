@@ -1,6 +1,6 @@
 import pytest
 
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 from pytest_mock import MockerFixture
 
@@ -178,3 +178,23 @@ class TestProgramForTimeslots:
         assert time_slots[1].m_offset == 1500
         assert time_slots[2].id == 2
         assert time_slots[2].m_offset == 1560
+
+
+class TestProgramAtGivenTime:
+    def test_get_active_zone__explicit_time__ignores_process_clock(self, mocker: MockerFixture):
+        # The process clock says 21:47 (UTC), the home is already at 23:47.
+        mocker.patch("vaillant_netatmo_api.thermostat.now", return_value=datetime(2026, 10, 18, 21, 47))
+        program = Program(
+            program_id="p",
+            zones=[{"id": 0, "name": "Comfort"}, {"id": 1, "name": "Night"}],
+            timetable=[
+                {"id": 1, "m_offset": 0},
+                {"id": 0, "m_offset": 6 * 1440 + 420},
+                {"id": 1, "m_offset": 6 * 1440 + 1320},
+            ],
+        )
+        home_time = datetime(2026, 10, 18, 23, 47, tzinfo=timezone(timedelta(hours=2)))
+
+        assert program.get_active_zone().name == "Comfort"
+        assert program.get_active_zone(home_time).name == "Night"
+        assert [slot.id for slot in program.get_timeslots_for_today(home_time)] == [1, 0, 1]

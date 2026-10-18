@@ -1,14 +1,16 @@
 import json
 
+from datetime import datetime, timedelta, timezone
+
 import httpx
 import pytest
 
 from respx import MockRouter
 
-from vaillant_netatmo_api.errors import RequestClientException
+from vaillant_netatmo_api.errors import RequestClientException, UnsuportedArgumentsException
 from vaillant_netatmo_api.thermostat import thermostat_client
 from vaillant_netatmo_api.token import Token
-from vaillant_netatmo_api.home import Home, TemperatureControlMode, ThermMode
+from vaillant_netatmo_api.home import Home, TemperatureControlMode, ThermMode, ThermSetpointMode
 
 token = Token({
     "access_token": "12345",
@@ -148,7 +150,31 @@ class TestHomeModel:
         assert home.rooms[0].therm_relay == "70:ee:50:00:00:01"
         assert home.therm_mode == ThermMode.AWAY
         assert home.therm_setpoint_default_duration == 180
+        assert home.timezone is None
+        assert Home(id="home", timezone="Europe/Brussels").timezone == "Europe/Brussels"
 
     def test_home__unknown_therm_mode__is_none(self):
         assert Home(id="home", therm_mode="something_new").therm_mode is None
         assert Home(id="home").therm_mode is None
+
+    @pytest.mark.asyncio
+    async def test_async_set_state_for_room__aware_end_time__is_sent_as_timestamp(self, respx_mock: MockRouter):
+        route = respx_mock.post("https://app.netatmo.net/syncapi/v1/setstate").respond(200, json={"status": "ok"})
+        end_time = datetime.now(timezone.utc) + timedelta(hours=1)
+
+        async with thermostat_client("", "", token, None) as client:
+            await client.async_set_state_for_room(
+                "home", "room", ThermSetpointMode.MANUAL, therm_setpoint_temperature=21, therm_setpoint_end_time=end_time
+            )
+
+        room = json.loads(route.calls.last.request.content)["home"]["rooms"][0]
+        assert room["therm_setpoint_end_time"] == round(end_time.timestamp())
+
+    @pytest.mark.asyncio
+    async def test_async_set_state_for_room__aware_end_time_in_past__raises(self, respx_mock: MockRouter):
+        async with thermostat_client("", "", token, None) as client:
+            with pytest.raises(UnsuportedArgumentsException):
+                await client.async_set_state_for_room(
+                    "home", "room", ThermSetpointMode.MANUAL, therm_setpoint_temperature=21,
+                    therm_setpoint_end_time=datetime.now(timezone.utc) - timedelta(minutes=1),
+                )

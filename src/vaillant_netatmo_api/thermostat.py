@@ -433,7 +433,11 @@ class ThermostatClient(BaseClient):
         if setpoint_endtime is None:
             return None
 
-        if setpoint_endtime <= now():
+        current_time = now()
+        if setpoint_endtime.tzinfo is not None:
+            current_time = current_time.astimezone(setpoint_endtime.tzinfo)
+
+        if setpoint_endtime <= current_time:
             raise UnsuportedArgumentsException(
                 "Provided arguments for setting endtime are not valid.", therm_setpoint_mode=therm_setpoint_mode, setpoint_endtime=setpoint_endtime
             )
@@ -612,12 +616,18 @@ class Program:
         self.name = name
         self.selected = selected
 
-    def get_active_zone(self) -> Zone | None:
-        """Returns a currently active zone for a program."""
+    def get_active_zone(self, at: datetime | None = None) -> Zone | None:
+        """
+        Returns the zone active at the given time, by default the current local time of this process.
+
+        Timetables are in the home's time zone, so pass the current time in that time zone when this process runs in another.
+        """
+
+        at = at or now()
 
         zone_id = 0
         for time_slot in self.timetable:
-            if not time_slot.is_already_started:
+            if not time_slot.is_started_at(at):
                 break
             zone_id = time_slot.id
 
@@ -627,12 +637,12 @@ class Program:
 
         return None
 
-    def get_timeslots_for_today(self) -> list[TimeSlot]:
+    def get_timeslots_for_today(self, at: datetime | None = None) -> list[TimeSlot]:
         """
-        Returns a list of time slots which are defined for today.
+        Returns a list of time slots which are defined for the day of the given time, by default today in this process' time zone.
         """
 
-        n = now()
+        n = at or now()
 
         time_slots = []
         previous_time_slot_zone_id = 0
@@ -715,11 +725,16 @@ class TimeSlot:
 
     @property
     def is_already_started(self) -> bool:
-        n = now()
+        """Returns whether this slot started this week, using the current local time of this process."""
 
-        if self.day < n.weekday():
+        return self.is_started_at(now())
+
+    def is_started_at(self, at: datetime) -> bool:
+        """Returns whether this slot started in the week of the given time."""
+
+        if self.day < at.weekday():
             return True
-        elif self.day == n.weekday() and self.time <= n.time():
+        elif self.day == at.weekday() and self.time <= at.time():
             return True
         else:
             return False
