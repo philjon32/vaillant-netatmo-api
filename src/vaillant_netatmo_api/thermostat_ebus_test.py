@@ -38,3 +38,8 @@ class TestDeviceEbusStatus:
                            "ebus_status": {"refill_water": True, "future_flag": True}})
 
         assert device.ebus_status.refill_water is True
+
+    def test_device__home_id_reported__is_parsed(self) -> None:
+        device = Device(**{"_id": "70:ee:50:00:00:00", "system_mode": "winter", "home_id": "home"})
+
+        assert device.home_id == "home"

@@ -129,3 +129,26 @@ class TestThermostatHome:
             "home": {"id": "home", "temperature_control_mode": "heating", "therm_mode": "away"},
             "app_identifier": "app_thermostat_vaillant",
         }
+
+
+class TestHomeModel:
+    def test_home__homesdata_payload__links_rooms_to_modules(self):
+        home = Home(**{
+            "id": "home",
+            "rooms": [
+                {"id": "room-1", "module_ids": ["07:00:00:00:00:01"], "therm_relay": "70:ee:50:00:00:01"},
+                {"id": "room-2", "module_ids": ["07:00:00:00:00:02"]},
+            ],
+            "therm_mode": "away",
+            "therm_setpoint_default_duration": 180,
+        })
+
+        assert home.get_room_for_module("07:00:00:00:00:02").id == "room-2"
+        assert home.get_room_for_module("unknown") is None
+        assert home.rooms[0].therm_relay == "70:ee:50:00:00:01"
+        assert home.therm_mode == ThermMode.AWAY
+        assert home.therm_setpoint_default_duration == 180
+
+    def test_home__unknown_therm_mode__is_none(self):
+        assert Home(id="home", therm_mode="something_new").therm_mode is None
+        assert Home(id="home").therm_mode is None

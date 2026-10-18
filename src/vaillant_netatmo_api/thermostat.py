@@ -511,11 +511,13 @@ class Device:
         ebus_status: dict = {},
         dhw_enabled: bool = False,
         modules: list[dict] = [],
+        home_id: str | None = None,
         **kwargs,
     ) -> None:
         """Create new device model."""
 
         self.id = _id
+        self.home_id = home_id
         self.type = type
         self.station_name = station_name
         self.firmware = firmware
