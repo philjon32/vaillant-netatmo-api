@@ -5,7 +5,7 @@ Fork of [MislavMandaric/vaillant-netatmo-api](https://github.com/MislavMandaric/
 from git tags, not from PyPI:
 
 ```bash
-pip install "vaillant-netatmo-api @ git+https://github.com/philjon32/vaillant-netatmo-api@v0.14.0"
+pip install "vaillant-netatmo-api @ git+https://github.com/philjon32/vaillant-netatmo-api@v0.15.0"
 ```
 
 Changes compared to upstream 0.13.1 are listed in [CHANGELOG.md](CHANGELOG.md).

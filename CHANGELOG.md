@@ -1,6 +1,22 @@
 # CHANGELOG
 
 
+## v0.15.0 (2026-10-18, fork)
+
+### Features
+
+* `ThermostatClient.async_get_home_states()` returns a typed, frozen `HomeState` per home, merged from homesdata, homestatus, getconfigs and getthermostatsdata (`data_amount=full`): settings, rooms, thermostats, boilers with hot water and heating curve, heating and hot water schedules (`Schedule.zone_at()`, `Schedule.next_change()`). `build_home_states()` builds it from response bodies.
+* `async_get_measures()`: several measurement types in one request.
+* `async_set_configs()`: hot water setpoint and storage (`dhw_always_on`).
+* `async_switch_home_schedule()`: heating or hot water schedule.
+* `async_set_home_settings()`: anticipation, heating priority, default setpoint and boost durations.
+* `ThermSetpointMode.HG` (frost protection) and `ThermSetpointMode.AWAY`.
+
+### Bug Fixes
+
+* `Device.system_mode` is None for missing or unknown values instead of raising.
+
+
 ## v0.14.0 (2026-10-18, fork)
 
 ### Bug Fixes
