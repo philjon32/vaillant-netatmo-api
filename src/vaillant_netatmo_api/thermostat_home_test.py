@@ -1,3 +1,5 @@
+import json
+
 import httpx
 import pytest
 
@@ -6,7 +8,7 @@ from respx import MockRouter
 from vaillant_netatmo_api.errors import RequestClientException
 from vaillant_netatmo_api.thermostat import thermostat_client
 from vaillant_netatmo_api.token import Token
-from vaillant_netatmo_api.home import Home
+from vaillant_netatmo_api.home import Home, TemperatureControlMode, ThermMode
 
 token = Token({
     "access_token": "12345",
@@ -115,3 +117,15 @@ class TestThermostatHome:
             assert len(homes) == len(expected_homes)
             for x in zip(homes, expected_homes):
                 assert x[0] == Home(**x[1])
+
+    async def test_async_set_home_data__therm_mode__is_sent_inside_home_object(self, respx_mock: MockRouter):
+        route = respx_mock.post("https://app.netatmo.net/api/sethomedata",
+                                headers={("authorization", "Bearer 12345")}).respond(200, json={"status": "ok"})
+
+        async with thermostat_client("", "", token, None) as client:
+            await client.async_set_home_data("home", TemperatureControlMode.HEATING, ThermMode.AWAY)
+
+        assert json.loads(route.calls.last.request.content) == {
+            "home": {"id": "home", "temperature_control_mode": "heating", "therm_mode": "away"},
+            "app_identifier": "app_thermostat_vaillant",
+        }
