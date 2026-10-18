@@ -1,7 +1,7 @@
 # CHANGELOG
 
 
-## v0.14.0 (unreleased, fork)
+## v0.14.0 (2026-10-18, fork)
 
 ### Bug Fixes
 
