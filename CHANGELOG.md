@@ -1,6 +1,26 @@
 # CHANGELOG
 
 
+## v0.14.0 (unreleased, fork)
+
+### Bug Fixes
+
+* Send `therm_mode` inside the `home` object in `async_set_home_data`, so away/schedule presets apply (upstream PR #149, by @bartfaik04).
+* Only refresh the access token when the API rejects the token (401, or 403 with error code 2/3). A 403 refusing an operation now raises `RequestForbiddenException` instead of rotating tokens and raising `RequestUnauthorizedException`.
+* A rejected token refresh raises `RequestUnauthorizedException` instead of retrying the request with the dead token.
+
+### Features
+
+* `Device.ebus_status` and `Device.dhw_enabled` (upstream PR #150, by @szmidtpiotr).
+* `Device.home_id`, `Room.module_ids`, `Room.therm_relay` and `Home.get_room_for_module()` for accounts with several homes.
+* `Home.therm_mode` and `Home.therm_setpoint_default_duration`.
+* `ApiException.error_code` with the Netatmo error code of the response.
+
+### Chores
+
+* uv-managed `pyproject.toml`, Python 3.13+, ruff, CI on Python 3.13/3.14. Removed PyPI publishing.
+
+
 ## v0.13.1 (2025-08-01)
 
 ### Bug Fixes

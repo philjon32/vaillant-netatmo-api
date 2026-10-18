@@ -1,9 +1,22 @@
 # vaillant-netatmo-api
 
-[![GitHub version](https://badge.fury.io/gh/MislavMandaric%2Fvaillant-netatmo-api.svg)](https://badge.fury.io/gh/MislavMandaric%2Fvaillant-netatmo-api)
-[![PyPI version](https://badge.fury.io/py/vaillant-netatmo-api.svg)](https://badge.fury.io/py/vaillant-netatmo-api)
-![Tests](https://github.com/MislavMandaric/vaillant-netatmo-api/actions/workflows/tests.yml/badge.svg)
+Fork of [MislavMandaric/vaillant-netatmo-api](https://github.com/MislavMandaric/vaillant-netatmo-api), maintained for
+[philjon32/home-assistant-vaillant-vsmart](https://github.com/philjon32/home-assistant-vaillant-vsmart). It is installed
+from git tags, not from PyPI:
 
+```bash
+pip install "vaillant-netatmo-api @ git+https://github.com/philjon32/vaillant-netatmo-api@v0.14.0"
+```
+
+Changes compared to upstream 0.13.1 are listed in [CHANGELOG.md](CHANGELOG.md).
+
+## Development
+
+```bash
+uv sync          # Python 3.13+
+uv run ruff check
+uv run pytest
+```
 
 ## General
 
@@ -13,15 +26,9 @@ Python 3 library for managing Vaillant thermostats using the Netatmo API. It pro
 
 ## Installation
 
-Library can be simply installed using pip.
-
-```bash
-pip install vaillant-netatmo-api
-```
+See the top of this file.
 
 Library requires Python 3 and has [tenacity](https://github.com/jd/tenacity) and [httpx](https://github.com/encode/httpx) dependencies.
-
-> NOTE: httpx is currently a prerelease software. The version outlined in the `requirements.txt` should be working properly, but if there are some breaking changes, please check their Github issue tracker for known issues.
 
 ## Usage
 
