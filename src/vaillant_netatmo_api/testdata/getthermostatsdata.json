@@ -1,0 +1,215 @@
+{
+ "devices": [
+  {
+   "_id": "70:ee:50:00:00:01",
+   "last_upgrade": 1496752507,
+   "subtype": "NAEbusVaillant",
+   "type": "NAVaillant",
+   "update_device": true,
+   "async_commands": [],
+   "behavior": 0,
+   "home_id": "aaaaaaaaaaaaaaaaaaaaaaa1",
+   "house_model": {
+    "hc_gefs": {
+     "slope": 26,
+     "temp_shift": 1,
+     "base_external_temp": -7,
+     "max_flow_set_point": 90,
+     "min_flow_set_point": 21,
+     "max_ext_temp": 20,
+     "default": true
+    },
+    "in_use": "gefs",
+    "prediction_activated": true,
+    "ca": {
+     "te": 8,
+     "ti": 1792361381
+    },
+    "last_compute_try": 1792238064
+   },
+   "last_setup": 1788384899,
+   "recompute_outdoor_time": 1792362914,
+   "config_version": {
+    "homeconf": 1
+   },
+   "boiler_error": [],
+   "dhw_enabled": false,
+   "ebus_error": false,
+   "emf_avail": false,
+   "firmware": 1030,
+   "firmware_private": 1030,
+   "last_fw_update": 1788384911,
+   "last_status_store": 1792363246,
+   "rf_amb_status": 76,
+   "wifi_status": 44,
+   "last_reset": 1788384912,
+   "enable_user_maintenance_notifications": true,
+   "last_toggle_user_maintenance_notifications": 1790800923,
+   "dhw": 45,
+   "dhw_max": 65,
+   "dhw_min": 35,
+   "dhw_control": "instantaneous",
+   "house_model_compute_published": 1792236971,
+   "last_sync_asked": 1792363324,
+   "dhw_setpoint_endtime": 1792366091,
+   "station_name": "Home",
+   "setpoint_default_duration": 180,
+   "heating_system": {
+    "heating_system_window_seen": true,
+    "heating_type": "radiator"
+   },
+   "udp_conn": true,
+   "last_plug_seen": 1792363246,
+   "outdoor_temperature": {
+    "te": 8,
+    "ti": 1792361381
+   },
+   "system_mode": "winter",
+   "setpoint_hwb": {
+    "setpoint_activate": false,
+    "setpoint_endtime": 1792366091
+   },
+   "modules": [
+    {
+     "_id": "07:00:00:00:00:01",
+     "type": "NAThermVaillant",
+     "anticipating": false,
+     "id": "07:00:00:00:00:01",
+     "last_setup": {
+      "$date": {
+       "$numberLong": "1788384899457"
+      }
+     },
+     "battery_vp": 3542,
+     "boiler_status": false,
+     "firmware": 14,
+     "last_fw_update": 1788384911,
+     "last_message": 1792363238,
+     "radio_id": 2,
+     "reachable": true,
+     "rf_status": 59,
+     "battery_percent": 36,
+     "last_therm_seen": 1792363238,
+     "setpoint_away": {
+      "setpoint_activate": false
+     },
+     "setpoint_manual": {
+      "setpoint_activate": false
+     },
+     "therm_program_list": [
+      {
+       "timetable": [
+        {
+         "m_offset": 0,
+         "id": 1
+        },
+        {
+         "m_offset": 420,
+         "id": 0
+        },
+        {
+         "m_offset": 1320,
+         "id": 1
+        },
+        {
+         "m_offset": 1860,
+         "id": 0
+        },
+        {
+         "m_offset": 2760,
+         "id": 1
+        },
+        {
+         "m_offset": 3300,
+         "id": 0
+        },
+        {
+         "m_offset": 4200,
+         "id": 1
+        },
+        {
+         "m_offset": 4740,
+         "id": 0
+        },
+        {
+         "m_offset": 5640,
+         "id": 1
+        },
+        {
+         "m_offset": 6180,
+         "id": 0
+        },
+        {
+         "m_offset": 7080,
+         "id": 1
+        },
+        {
+         "m_offset": 7620,
+         "id": 0
+        },
+        {
+         "m_offset": 8520,
+         "id": 1
+        },
+        {
+         "m_offset": 9060,
+         "id": 0
+        },
+        {
+         "m_offset": 9960,
+         "id": 1
+        }
+       ],
+       "zones": [
+        {
+         "name": "Comfort",
+         "id": 0,
+         "type": 0,
+         "temp": 20,
+         "hw": true
+        },
+        {
+         "name": "Night",
+         "id": 1,
+         "type": 1,
+         "temp": 17,
+         "hw": false
+        },
+        {
+         "name": "Eco",
+         "id": 4,
+         "type": 5,
+         "temp": 16,
+         "hw": false
+        },
+        {
+         "type": 3,
+         "id": 2,
+         "temp": 7,
+         "hw": false
+        }
+       ],
+       "name": "My schedule",
+       "program_id": "bbbbbbbbbbbbbbbbbbbbbbb1",
+       "selected": true
+      }
+     ],
+     "measured": {
+      "time": 1792362874,
+      "temperature": 20,
+      "setpoint_temp": 17,
+      "est_setpoint_temp": 17
+     }
+    }
+   ],
+   "syncing": true,
+   "ebus_status": {
+    "ebus_error": false,
+    "boiler_error": false,
+    "maintenance_status": false,
+    "refill_water": false,
+    "emf_avail": false
+   }
+  }
+ ]
+}

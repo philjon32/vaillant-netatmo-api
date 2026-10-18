@@ -1,0 +1,87 @@
+{
+ "home": {
+  "id": "aaaaaaaaaaaaaaaaaaaaaaa1",
+  "modules": [
+   {
+    "boiler_error": [],
+    "dhw_enabled": false,
+    "ebus_error": false,
+    "emf_avail": false,
+    "firmware_revision": 1030,
+    "hardware_version": 247,
+    "id": "70:ee:50:00:00:01",
+    "outdoor_temperature": 8,
+    "rf_strength": 76,
+    "sequence_id": 7223,
+    "subtype": "NAEbusVaillant",
+    "type": "NAVaillant",
+    "wifi_strength": 44
+   },
+   {
+    "battery_level": 3542,
+    "battery_percent": 34,
+    "boiler_status": false,
+    "firmware_revision": 14,
+    "id": "07:00:00:00:00:01",
+    "last_message": 1792363238,
+    "last_seen": 1792363238,
+    "radio_id": 2,
+    "reachable": true,
+    "rf_strength": 59,
+    "type": "NAThermVaillant",
+    "bridge": "70:ee:50:00:00:01",
+    "battery_state": "medium"
+   },
+   {
+    "boiler_error": [],
+    "dhw_enabled": false,
+    "ebus_error": false,
+    "emf_avail": false,
+    "firmware_revision": 1030,
+    "hardware_version": 247,
+    "id": "70:ee:50:00:00:01",
+    "outdoor_temperature": 8,
+    "rf_strength": 76,
+    "sequence_id": 7223,
+    "subtype": "NAEbusVaillant",
+    "type": "NAVaillant",
+    "wifi_strength": 44
+   },
+   {
+    "battery_level": 3542,
+    "battery_percent": 34,
+    "boiler_status": false,
+    "firmware_revision": 14,
+    "id": "07:00:00:00:00:01",
+    "last_message": 1792363238,
+    "last_seen": 1792363238,
+    "radio_id": 2,
+    "reachable": true,
+    "rf_strength": 59,
+    "type": "NAThermVaillant",
+    "bridge": "70:ee:50:00:00:01",
+    "battery_state": "medium"
+   }
+  ],
+  "rooms": [
+   {
+    "anticipating": false,
+    "id": "1000000001",
+    "reachable": true,
+    "therm_measured_temperature": 20,
+    "therm_setpoint_mode": "home",
+    "therm_setpoint_start_time": 1792362246,
+    "therm_setpoint_temperature": 17
+   },
+   {
+    "anticipating": false,
+    "id": "1000000001",
+    "reachable": true,
+    "therm_measured_temperature": 20,
+    "therm_setpoint_mode": "home",
+    "therm_setpoint_start_time": 1792362246,
+    "therm_setpoint_temperature": 17
+   }
+  ]
+ }
+}

@@ -1,0 +1,459 @@
+{
+ "homes": [
+  {
+   "id": "aaaaaaaaaaaaaaaaaaaaaaa1",
+   "name": "Home",
+   "timezone": "Europe/Brussels",
+   "nb_users": 1,
+   "data_versions": {},
+   "place_improved": false,
+   "trust_location": false,
+   "therm_absence_notification": true,
+   "therm_absence_autoaway": false,
+   "rooms": [
+    {
+     "id": "1000000001",
+     "type": "custom",
+     "module_ids": [
+      "07:00:00:00:00:01"
+     ],
+     "modules": [
+      "07:00:00:00:00:01"
+     ],
+     "therm_relay": "70:ee:50:00:00:01",
+     "measure_offset_NAVaillant_temperature": 0
+    }
+   ],
+   "modules": [
+    {
+     "id": "70:ee:50:00:00:01",
+     "type": "NAVaillant",
+     "subtype": "NAEbusVaillant",
+     "setup_date": 1788384899,
+     "reachable": true,
+     "modules_bridged": [
+      "07:00:00:00:00:01"
+     ],
+     "schedule_limits": [
+      {
+       "nb_timeslots": 150,
+       "nb_zones": 16,
+       "nb_modules": 1,
+       "type": "event"
+      },
+      {
+       "nb_zones": 16,
+       "nb_timeslots": 150,
+       "type": "therm"
+      }
+     ],
+     "capabilities": [
+      {
+       "name": "automatism",
+       "available": true
+      }
+     ],
+     "dhw_control": "instantaneous"
+    },
+    {
+     "id": "07:00:00:00:00:01",
+     "type": "NAThermVaillant",
+     "setup_date": 1788384899,
+     "room_id": "1000000001",
+     "bridge": "70:ee:50:00:00:01"
+    }
+   ],
+   "temperature_control_mode": "heating",
+   "therm_schedules": [
+    {
+     "timetable": [
+      {
+       "zone_id": 1,
+       "m_offset": 0
+      },
+      {
+       "zone_id": 0,
+       "m_offset": 420
+      },
+      {
+       "zone_id": 1,
+       "m_offset": 1320
+      },
+      {
+       "zone_id": 0,
+       "m_offset": 1860
+      },
+      {
+       "zone_id": 1,
+       "m_offset": 2760
+      },
+      {
+       "zone_id": 0,
+       "m_offset": 3300
+      },
+      {
+       "zone_id": 1,
+       "m_offset": 4200
+      },
+      {
+       "zone_id": 0,
+       "m_offset": 4740
+      },
+      {
+       "zone_id": 1,
+       "m_offset": 5640
+      },
+      {
+       "zone_id": 0,
+       "m_offset": 6180
+      },
+      {
+       "zone_id": 1,
+       "m_offset": 7080
+      },
+      {
+       "zone_id": 0,
+       "m_offset": 7620
+      },
+      {
+       "zone_id": 1,
+       "m_offset": 8520
+      },
+      {
+       "zone_id": 0,
+       "m_offset": 9060
+      },
+      {
+       "zone_id": 1,
+       "m_offset": 9960
+      }
+     ],
+     "zones": [
+      {
+       "name": "Comfort",
+       "id": 0,
+       "type": 0,
+       "rooms_temp": [
+        {
+         "room_id": "1000000001",
+         "temp": 20
+        }
+       ]
+      },
+      {
+       "name": "Night",
+       "id": 1,
+       "type": 1,
+       "rooms_temp": [
+        {
+         "room_id": "1000000001",
+         "temp": 17
+        }
+       ]
+      },
+      {
+       "name": "Eco",
+       "id": 4,
+       "type": 5,
+       "rooms_temp": [
+        {
+         "room_id": "1000000001",
+         "temp": 16
+        }
+       ]
+      }
+     ],
+     "name": "My schedule",
+     "default": false,
+     "away_temp": 16,
+     "hg_temp": 7,
+     "id": "bbbbbbbbbbbbbbbbbbbbbbb1",
+     "type": "therm",
+     "selected": true
+    }
+   ],
+   "therm_mode": "schedule",
+   "therm_setpoint_default_duration": 180,
+   "anticipation": true,
+   "outdoor_temperature_source": "station",
+   "therm_heating_priority": "eco",
+   "cooling_mode": "schedule",
+   "therm_boost_default_duration": 30,
+   "linked_schedules": [
+    {
+     "therm": "bbbbbbbbbbbbbbbbbbbbbbb1",
+     "event": "bbbbbbbbbbbbbbbbbbbbbbb2"
+    }
+   ],
+   "gone_after": 14400,
+   "share_info": false,
+   "smart_notifs": true,
+   "events_ttl": "one_month",
+   "schedules": [
+    {
+     "timetable": [
+      {
+       "zone_id": 1,
+       "m_offset": 0
+      },
+      {
+       "zone_id": 0,
+       "m_offset": 420
+      },
+      {
+       "zone_id": 1,
+       "m_offset": 1320
+      },
+      {
+       "zone_id": 0,
+       "m_offset": 1860
+      },
+      {
+       "zone_id": 1,
+       "m_offset": 2760
+      },
+      {
+       "zone_id": 0,
+       "m_offset": 3300
+      },
+      {
+       "zone_id": 1,
+       "m_offset": 4200
+      },
+      {
+       "zone_id": 0,
+       "m_offset": 4740
+      },
+      {
+       "zone_id": 1,
+       "m_offset": 5640
+      },
+      {
+       "zone_id": 0,
+       "m_offset": 6180
+      },
+      {
+       "zone_id": 1,
+       "m_offset": 7080
+      },
+      {
+       "zone_id": 0,
+       "m_offset": 7620
+      },
+      {
+       "zone_id": 1,
+       "m_offset": 8520
+      },
+      {
+       "zone_id": 0,
+       "m_offset": 9060
+      },
+      {
+       "zone_id": 1,
+       "m_offset": 9960
+      }
+     ],
+     "zones": [
+      {
+       "name": "Comfort",
+       "id": 0,
+       "type": 0,
+       "rooms_temp": [
+        {
+         "room_id": "1000000001",
+         "temp": 20
+        }
+       ],
+       "rooms": [
+        {
+         "id": "1000000001",
+         "therm_setpoint_temperature": 20
+        }
+       ]
+      },
+      {
+       "name": "Night",
+       "id": 1,
+       "type": 1,
+       "rooms_temp": [
+        {
+         "room_id": "1000000001",
+         "temp": 17
+        }
+       ],
+       "rooms": [
+        {
+         "id": "1000000001",
+         "therm_setpoint_temperature": 17
+        }
+       ]
+      },
+      {
+       "name": "Eco",
+       "id": 4,
+       "type": 5,
+       "rooms_temp": [
+        {
+         "room_id": "1000000001",
+         "temp": 16
+        }
+       ],
+       "rooms": [
+        {
+         "id": "1000000001",
+         "therm_setpoint_temperature": 16
+        }
+       ]
+      }
+     ],
+     "name": "My schedule",
+     "default": false,
+     "away_temp": 16,
+     "hg_temp": 7,
+     "id": "bbbbbbbbbbbbbbbbbbbbbbb1",
+     "type": "therm",
+     "selected": true
+    },
+    {
+     "timetable": [
+      {
+       "m_offset": 0,
+       "zone_id": 1
+      },
+      {
+       "m_offset": 360,
+       "zone_id": 0
+      },
+      {
+       "m_offset": 540,
+       "zone_id": 4
+      },
+      {
+       "m_offset": 1020,
+       "zone_id": 0
+      },
+      {
+       "m_offset": 1320,
+       "zone_id": 1
+      },
+      {
+       "m_offset": 1800,
+       "zone_id": 0
+      },
+      {
+       "m_offset": 1980,
+       "zone_id": 4
+      },
+      {
+       "m_offset": 2460,
+       "zone_id": 0
+      },
+      {
+       "m_offset": 2760,
+       "zone_id": 1
+      },
+      {
+       "m_offset": 3240,
+       "zone_id": 0
+      },
+      {
+       "m_offset": 3420,
+       "zone_id": 4
+      },
+      {
+       "m_offset": 3900,
+       "zone_id": 0
+      },
+      {
+       "m_offset": 4200,
+       "zone_id": 1
+      },
+      {
+       "m_offset": 4680,
+       "zone_id": 0
+      },
+      {
+       "m_offset": 4860,
+       "zone_id": 4
+      },
+      {
+       "m_offset": 5340,
+       "zone_id": 0
+      },
+      {
+       "m_offset": 5640,
+       "zone_id": 1
+      },
+      {
+       "m_offset": 6120,
+       "zone_id": 0
+      },
+      {
+       "m_offset": 6300,
+       "zone_id": 4
+      },
+      {
+       "m_offset": 6900,
+       "zone_id": 0
+      },
+      {
+       "m_offset": 7080,
+       "zone_id": 1
+      },
+      {
+       "m_offset": 7560,
+       "zone_id": 0
+      },
+      {
+       "m_offset": 8520,
+       "zone_id": 1
+      },
+      {
+       "m_offset": 9000,
+       "zone_id": 0
+      },
+      {
+       "m_offset": 9960,
+       "zone_id": 1
+      }
+     ],
+     "zones": [
+      {
+       "id": 0,
+       "modules": [
+        {
+         "id": "70:ee:50:00:00:01",
+         "dhw_enabled": true
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "modules": [
+        {
+         "id": "70:ee:50:00:00:01",
+         "dhw_enabled": false
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "modules": [
+        {
+         "id": "70:ee:50:00:00:01",
+         "dhw_enabled": false
+        }
+       ]
+      }
+     ],
+     "default": true,
+     "timetable_sunrise": [],
+     "timetable_sunset": [],
+     "id": "bbbbbbbbbbbbbbbbbbbbbbb2",
+     "type": "event",
+     "selected": true
+    }
+   ]
+  }
+ ]
+}

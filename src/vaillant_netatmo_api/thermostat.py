@@ -5,13 +5,14 @@ from __future__ import annotations
 import json
 
 from contextlib import asynccontextmanager
-from datetime import datetime, time
+from datetime import datetime, time, timezone
 from enum import Enum
 from typing import AsyncGenerator, Callable
 
 from httpx import AsyncClient
 
-from .home import Home, ThermMode, TemperatureControlMode, ThermSetpointMode
+from .home import Home, SystemMode, ThermMode, TemperatureControlMode, ThermSetpointMode
+from .state import HeatingPriority, HomeState, ScheduleType, build_home_states, parse_enum
 from .base import BaseClient
 from .errors import NonOkResponseException, UnsuportedArgumentsException
 from .thermostat_auth import ThermostatAuth
@@ -19,6 +20,10 @@ from .time import now
 from .token import Token, TokenStore
 
 _HOMES_DATA_PATH = "api/homesdata"
+_HOME_STATUS_PATH = "syncapi/v1/homestatus"
+_GET_CONFIGS_PATH = "syncapi/v1/getconfigs"
+_SET_CONFIGS_PATH = "syncapi/v1/setconfigs"
+_SWITCH_HOME_SCHEDULE_PATH = "api/switchhomeschedule"
 _SET_HOME_DATA = "api/sethomedata"
 _SET_STATE = "syncapi/v1/setstate"
 
@@ -415,6 +420,163 @@ class ThermostatClient(BaseClient):
                 "Unknown response error. Check the log for more details.", path=path, data=data, body=body
             )
 
+    async def async_get_home_states(self) -> list[HomeState]:
+        """
+        Get a typed snapshot of every home: structure, settings, schedules and live state.
+
+        Combines homesdata, homestatus and getconfigs for each home with getthermostatsdata. On error, throws an exception.
+        """
+
+        homes_data = await self._async_post_ok(
+            _HOMES_DATA_PATH,
+            {"app_type": _VAILLANT_APP_ID, "app_identifier": _VAILLANT_APP_ID, "sync_measurements": True},
+        )
+
+        statuses: dict[str, dict] = {}
+        configs: dict[str, dict] = {}
+        for home in homes_data.get("homes", []):
+            request = {"home_id": home["id"], "app_identifier": _VAILLANT_APP_ID}
+            statuses[home["id"]] = await self._async_post_ok(_HOME_STATUS_PATH, request)
+            configs[home["id"]] = await self._async_post_ok(_GET_CONFIGS_PATH, request)
+
+        thermostats_data = await self._async_old_post_ok(
+            _GET_THERMOSTATS_DATA_PATH,
+            {
+                "device_type": _VAILLANT_DEVICE_TYPE,
+                # "full" adds the heating curve (house_model) and heating type.
+                "data_amount": "full",
+                "sync_device_id": _VAILLANT_SYNC_DEVICE_ID,
+            },
+        )
+
+        return build_home_states(homes_data, statuses, configs, thermostats_data)
+
+    async def async_get_measures(
+        self,
+        device_id: str,
+        module_id: str,
+        types: list[MeasurementType],
+        scale: MeasurementScale,
+        date_begin: datetime,
+        date_end: datetime | None = None,
+    ) -> dict[MeasurementType, list[tuple[datetime, float | None]]]:
+        """
+        Get several measurement types in one request.
+
+        Returns, per type, the (start time, value) pairs of each interval. On error, throws an exception.
+        """
+
+        data = {
+            "device_id": device_id,
+            "module_id": module_id,
+            "type": ",".join(t.value for t in types),
+            "scale": scale.value,
+            "date_begin": round(date_begin.timestamp()),
+            "optimize": "true",
+        }
+        if date_end is not None:
+            data["date_end"] = round(date_end.timestamp())
+
+        body = await self._async_old_post_ok(_GET_MEASURE_PATH, data)
+
+        series: dict[MeasurementType, list[tuple[datetime, float | None]]] = {t: [] for t in types}
+        for chunk in body or []:
+            step = chunk.get("step_time") or 0
+            for index, values in enumerate(chunk.get("value", [])):
+                start = datetime.fromtimestamp(chunk["beg_time"] + index * step, timezone.utc)
+                for measurement_type, value in zip(types, values):
+                    series[measurement_type].append((start, value))
+
+        return series
+
+    async def async_set_configs(
+        self,
+        home_id: str,
+        module_id: str,
+        dhw_setpoint_temperature: int | None = None,
+        dhw_always_on: bool | None = None,
+    ) -> None:
+        """
+        Change the hot water configuration of a boiler: setpoint and/or storage (always on).
+
+        On success, returns nothing. On error, throws an exception.
+        """
+
+        module: dict = {"id": module_id}
+        if dhw_setpoint_temperature is not None:
+            module["dhw_setpoint_temperature"] = dhw_setpoint_temperature
+        if dhw_always_on is not None:
+            module["dhw_always_on"] = dhw_always_on
+
+        await self._async_post_ok(
+            _SET_CONFIGS_PATH,
+            {"home": {"id": home_id, "modules": [module]}, "app_identifier": _VAILLANT_APP_ID},
+        )
+
+    async def async_switch_home_schedule(
+        self,
+        home_id: str,
+        schedule_id: str,
+        schedule_type: ScheduleType = ScheduleType.THERM,
+    ) -> None:
+        """
+        Make the given heating or hot water schedule the active one.
+
+        On success, returns nothing. On error, throws an exception.
+        """
+
+        await self._async_post_ok(
+            _SWITCH_HOME_SCHEDULE_PATH,
+            {
+                "home_id": home_id,
+                "schedule_id": schedule_id,
+                "schedule_type": schedule_type.value,
+                "app_identifier": _VAILLANT_APP_ID,
+            },
+        )
+
+    async def async_set_home_settings(
+        self,
+        home_id: str,
+        anticipation: bool | None = None,
+        heating_priority: HeatingPriority | None = None,
+        setpoint_default_duration: int | None = None,
+        boost_default_duration: int | None = None,
+    ) -> None:
+        """
+        Change settings of the home. Only the given settings are sent.
+
+        The boost default duration accepts 30, 60 or 90 minutes. On error, throws an exception.
+        """
+
+        home: dict = {"id": home_id}
+        if anticipation is not None:
+            home["anticipation"] = anticipation
+        if heating_priority is not None:
+            home["therm_heating_priority"] = heating_priority.value
+        if setpoint_default_duration is not None:
+            home["therm_setpoint_default_duration"] = setpoint_default_duration
+        if boost_default_duration is not None:
+            home["therm_boost_default_duration"] = boost_default_duration
+
+        await self._async_post_ok(_SET_HOME_DATA, {"home": home, "app_identifier": _VAILLANT_APP_ID})
+
+    async def _async_post_ok(self, path: str, data: dict) -> dict:
+        body = await self._post(path, json=data)
+        return self._ok_body(path, data, body)
+
+    async def _async_old_post_ok(self, path: str, data: dict) -> dict:
+        body = await self._old_post(path, data=data)
+        return self._ok_body(path, data, body)
+
+    @staticmethod
+    def _ok_body(path: str, data: dict, body: dict) -> dict:
+        if body.get("status") != _RESPONSE_STATUS_OK:
+            raise NonOkResponseException(
+                "Unknown response error. Check the log for more details.", path=path, data=data, body=body
+            )
+        return body.get("body")
+
     def _get_setpoint_endtime(
         self,
         therm_setpoint_mode: ThermSetpointMode,
@@ -531,7 +693,7 @@ class Device:
         self.dhw_min = dhw_min
         self.setpoint_default_duration = setpoint_default_duration
         self.outdoor_temperature = OutdoorTemperature(**outdoor_temperature)
-        self.system_mode = SystemMode(system_mode)
+        self.system_mode = parse_enum(SystemMode, system_mode)
         self.setpoint_hwb = Setpoint(**setpoint_hwb)
         self.ebus_status = EbusStatus(**ebus_status)
         self.dhw_enabled = dhw_enabled
@@ -819,14 +981,6 @@ class MeasurementItem:
             and len(self.value) == len(other.value)
             and all([False for i, j in zip(self.value, other.value) if i != j])
         )
-
-
-class SystemMode(Enum):
-    """SystemMode enumeration representing possible system modes of the thermostat."""
-
-    WINTER = "winter"
-    SUMMER = "summer"
-    FROSTGUARD = "frostguard"
 
 
 class SetpointMode(Enum):

@@ -40,6 +40,21 @@ from .thermostat import (
     Zone,
     thermostat_client,
 )
+from .state import (
+    Boiler,
+    HeatingCurve,
+    HeatingPriority,
+    HomeSettings,
+    HomeState,
+    HotWater,
+    Room as RoomState,
+    Schedule,
+    ScheduleType,
+    Thermostat,
+    TimetableEntry,
+    Zone as ScheduleZone,
+    build_home_states,
+)
 from .token import Token, TokenStore
 
 __all__ = [
@@ -78,6 +93,19 @@ __all__ = [
     "SetpointMode",
     "Token",
     "TokenStore",
+    "Boiler",
+    "HeatingCurve",
+    "HeatingPriority",
+    "HomeSettings",
+    "HomeState",
+    "HotWater",
+    "RoomState",
+    "Schedule",
+    "ScheduleType",
+    "Thermostat",
+    "TimetableEntry",
+    "ScheduleZone",
+    "build_home_states",
     "auth_client",
     "thermostat_client",
 ]

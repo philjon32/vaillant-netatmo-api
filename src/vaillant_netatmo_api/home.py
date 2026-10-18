@@ -90,6 +90,8 @@ class ThermSetpointMode(Enum):
 
     MANUAL = "manual"
     HOME = "home"
+    HG = "hg"
+    AWAY = "away"
 
 
 def _parse_enum(enum: type[Enum], value: str | None) -> Enum | None:
@@ -99,3 +101,11 @@ def _parse_enum(enum: type[Enum], value: str | None) -> Enum | None:
         return enum(value)
     except ValueError:
         return None
+
+
+class SystemMode(Enum):
+    """SystemMode enumeration representing possible system modes of the thermostat."""
+
+    WINTER = "winter"
+    SUMMER = "summer"
+    FROSTGUARD = "frostguard"

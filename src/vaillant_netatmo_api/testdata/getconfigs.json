@@ -1,0 +1,25 @@
+{
+ "home": {
+  "id": "aaaaaaaaaaaaaaaaaaaaaaa1",
+  "modules": [
+   {
+    "dhw_always_on": false,
+    "dhw_setpoint_temperature": 45,
+    "dhw_temperature_max": 65,
+    "dhw_temperature_min": 35,
+    "id": "70:ee:50:00:00:01",
+    "rf_stats": false,
+    "type": "NAVaillant"
+   },
+   {
+    "dhw_always_on": false,
+    "dhw_setpoint_temperature": 45,
+    "dhw_temperature_max": 65,
+    "dhw_temperature_min": 35,
+    "id": "70:ee:50:00:00:01",
+    "rf_stats": false,
+    "type": "NAVaillant"
+   }
+  ]
+ }
+}
