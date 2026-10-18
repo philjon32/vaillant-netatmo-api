@@ -1,34 +1,49 @@
 [build-system]
-requires = [
-    "setuptools",
-]
+requires = ["setuptools>=69"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "vaillant-netatmo-api"
 version = "0.13.1"
 authors = [
-    { name="Mislav Mandaric" },
+    { name = "Mislav Mandaric" },
 ]
 description = "Python 3 library for managing Vaillant thermostats using the Netatmo API."
 readme = "README.md"
-requires-python = ">=3.8"
+license = "MIT"
+requires-python = ">=3.13"
 dependencies = [
-    "httpx>=0.18.2",
-    "tenacity>=8.0.1",
+    "httpx>=0.27",
+    "tenacity>=8.2",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
 
 [project.urls]
-Homepage = "https://github.com/MislavMandaric/vaillant-netatmo-api"
-Issues = "https://github.com/MislavMandaric/vaillant-netatmo-api/issues"
+Homepage = "https://github.com/philjon32/vaillant-netatmo-api"
+Upstream = "https://github.com/MislavMandaric/vaillant-netatmo-api"
 
-[tool.semantic_release]
-version_toml = ["pyproject.toml:project.version"]
-build_command = "pip install build && python -m build"
-commit_message = "chore(release): {version} [skip ci]"
-major_on_zero = false
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=1.0",
+    "pytest-mock>=3.14",
+    "respx>=0.22",
+    "ruff>=0.15",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["src"]
+python_files = ["*_test.py"]
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.ruff]
+target-version = "py313"
+line-length = 127
+
+[tool.ruff.lint]
+# Pyflakes plus syntax errors only: the existing code predates any formatter, so
+# style rules would produce a noisy diff unrelated to behaviour.
+select = ["E9", "F"]

@@ -1,13 +1,12 @@
 import httpx
 import pytest
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from pytest_mock import MockerFixture
 from respx import MockRouter
 
-from vaillant_netatmo_api.errors import RequestClientException, UnsuportedArgumentsException
-from vaillant_netatmo_api.thermostat import Device, MeasurementItem, MeasurementScale, MeasurementType, SetpointMode, SystemMode, TimeSlot, Zone, thermostat_client
+from vaillant_netatmo_api.errors import RequestClientException
+from vaillant_netatmo_api.thermostat import Device, MeasurementItem, MeasurementScale, MeasurementType, TimeSlot, Zone, thermostat_client
 from vaillant_netatmo_api.token import Token
 
 token = Token({

@@ -11,7 +11,7 @@ from typing import AsyncGenerator, Callable
 
 from httpx import AsyncClient
 
-from .home import Home, Room, ThermMode, TemperatureControlMode, ThermSetpointMode
+from .home import Home, ThermMode, TemperatureControlMode, ThermSetpointMode
 from .base import BaseClient
 from .errors import NonOkResponseException, UnsuportedArgumentsException
 from .thermostat_auth import ThermostatAuth
