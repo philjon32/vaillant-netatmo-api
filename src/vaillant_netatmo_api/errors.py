@@ -8,6 +8,40 @@ from typing import Generator
 
 from httpx import codes, HTTPStatusError, NetworkError, Request, Response, TimeoutException
 
+# Netatmo error codes (the "error.code" field of an error response body) which mean
+# the access token itself is the problem. Any other 403 is a refused operation.
+TOKEN_ERROR_CODES = frozenset({2, 3})  # invalid access token, access token expired
+
+
+def netatmo_error_code(response: Response | None) -> int | None:
+    """Return the Netatmo error code from an error response body, if there is one."""
+
+    if response is None:
+        return None
+
+    try:
+        error = response.json().get("error")
+    except (ValueError, AttributeError):
+        return None
+
+    if isinstance(error, dict) and isinstance(error.get("code"), int):
+        return error["code"]
+
+    return None
+
+
+def is_token_error(response: Response) -> bool:
+    """Return whether the response rejects the request because of the access token."""
+
+    if response.status_code == codes.UNAUTHORIZED:
+        return True
+
+    if response.status_code == codes.FORBIDDEN:
+        code = netatmo_error_code(response)
+        return code is None or code in TOKEN_ERROR_CODES
+
+    return False
+
 
 class UnsuportedArgumentsException(Exception):
     """Exception which is thrown when provided argument is not valid parameter of the method."""
@@ -33,6 +67,7 @@ class ApiException(Exception):
     def __init__(self, message: str, request: Request, response: Response | None) -> None:
         self.request = _sanitize_request(request)
         self.response = _sanitize_response(response)
+        self.error_code = netatmo_error_code(response)
 
         super().__init__(message, self.request, self.response)
 
@@ -54,7 +89,7 @@ class NetworkException(RetryableException):
 
 
 class RequestUnauthorizedException(NonRetryableException):
-    """Exception which is thrown when server returns an 401 UNAUUTHORIZED or 403 FORBIDDEN response."""
+    """Exception which is thrown when server rejects the access token (401, or 403 with a token error code)."""
 
 
 class RequestBackoffException(NonRetryableException):
@@ -63,6 +98,10 @@ class RequestBackoffException(NonRetryableException):
 
 class RequestClientException(NonRetryableException):
     """Exception which is thrown when server returns any 4xx response."""
+
+
+class RequestForbiddenException(RequestClientException):
+    """Exception which is thrown when server returns 403 FORBIDDEN for a valid token, refusing the operation itself."""
 
 
 class RequestServerException(RetryableException):
@@ -82,8 +121,10 @@ def client_error_handler() -> Generator[None]:
     except NetworkError as e:
         raise NetworkException("Unknown network error while accessing the API. Retry the request or check the network if the issue persists.", e.request, None) from e
     except HTTPStatusError as e:
-        if e.response.status_code == codes.UNAUTHORIZED or e.response.status_code == codes.FORBIDDEN:
+        if is_token_error(e.response):
             raise RequestUnauthorizedException("Access token is invalid or expired. Refresh the access token and try again.", e.request, e.response) from e
+        if e.response.status_code == codes.FORBIDDEN:
+            raise RequestForbiddenException("Server refused to perform the operation. Retrying with a new access token will not help.", e.request, e.response) from e
         if e.response.status_code == codes.TOO_MANY_REQUESTS:
             raise RequestBackoffException("Client is sending too many requests. Reduce the frequency at which API is accessed and try again.", e.request, e.response)
         if codes.is_client_error(e.response.status_code):

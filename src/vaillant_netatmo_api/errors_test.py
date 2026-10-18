@@ -3,7 +3,7 @@ import pytest
 
 from datetime import timedelta
 
-from vaillant_netatmo_api.errors import ApiException, NetworkException, RequestBackoffException, RequestClientException, RequestException, RequestServerException, RequestUnauthorizedException, client_error_handler, NetworkTimeoutException
+from vaillant_netatmo_api.errors import ApiException, NetworkException, RequestBackoffException, RequestClientException, RequestForbiddenException, RequestException, RequestServerException, RequestUnauthorizedException, client_error_handler, NetworkTimeoutException
 
 
 @pytest.mark.asyncio
@@ -95,3 +95,27 @@ class TestApiException:
             raise ApiException("test", request=request, response=response)
         
         assert ex.value.request["body"] == b"a=b&access_token=<FILTERED>&c=d&password=<FILTERED>&"
+
+@pytest.mark.asyncio
+class TestForbiddenErrors:
+    async def test_client_error_handler__403_operation_forbidden__raises_request_forbidden_exception(self):
+        request = httpx.Request("POST", "https://api.netatmo.com/")
+
+        response = httpx.Response(403, request=request, json={"error": {"code": 13, "message": "Operation is forbidden"}})
+        response.elapsed = timedelta()
+
+        with pytest.raises(RequestForbiddenException) as err:
+            with client_error_handler():
+                raise httpx.HTTPStatusError("test", request=request, response=response)
+
+        assert err.value.error_code == 13
+
+    async def test_client_error_handler__403_token_expired__raises_request_unauthorized_exception(self):
+        request = httpx.Request("POST", "https://api.netatmo.com/")
+
+        response = httpx.Response(403, request=request, json={"error": {"code": 3, "message": "Access token expired"}})
+        response.elapsed = timedelta()
+
+        with pytest.raises(RequestUnauthorizedException):
+            with client_error_handler():
+                raise httpx.HTTPStatusError("test", request=request, response=response)

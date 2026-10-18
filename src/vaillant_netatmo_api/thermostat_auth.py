@@ -3,8 +3,9 @@ from __future__ import annotations
 from typing import Generator
 from urllib.parse import urlencode
 
-from httpx import Auth, Headers, Request, Response, codes
+from httpx import Auth, Headers, Request, Response
 
+from .errors import RequestUnauthorizedException, is_token_error
 from .token import Token, TokenStore
 
 _TOKEN_PATH = "/oauth2/token"
@@ -38,7 +39,7 @@ class ThermostatAuth(Auth):
 
         response = yield self._get_access_token_request(request)
 
-        if response.status_code == codes.UNAUTHORIZED or response.status_code == codes.FORBIDDEN:
+        if is_token_error(response):
             refresh_response = yield self._get_refresh_token_request(request)
             self._process_refresh_response(refresh_response)
 
@@ -75,8 +76,14 @@ class ThermostatAuth(Auth):
         )
 
     def _process_refresh_response(self, response: Response) -> None:
-        if not response.is_error:
-            self._token_store.token = Token(response.json())
+        if response.is_error:
+            raise RequestUnauthorizedException(
+                "Refreshing the access token failed. Authenticate again with username and password.",
+                response.request,
+                response,
+            )
+
+        self._token_store.token = Token(response.json())
 
     def _is_content_type_json(self, request: Request) -> bool:
         if request.headers.get("content-type") == "application/json":
