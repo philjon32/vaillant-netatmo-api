@@ -1,5 +1,5 @@
 anyio==3.3.4
-attrs==21.2.0
+attrs==26.1.0
 certifi==2021.10.8
 charset-normalizer==2.0.7
 flake8==3.9.2
