@@ -14,7 +14,7 @@ class TokenStore:
         client_id: str,
         client_secret: str,
         token: Token | None = None,
-        on_token_update: Callable[[Token], None] = None,
+        on_token_update: Callable[[Token], None] | None = None,
     ) -> None:
         self._client_id = client_id
         self._client_secret = client_secret

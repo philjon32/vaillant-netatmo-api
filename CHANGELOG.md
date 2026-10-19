@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.16.1 (2026-10-19, fork)
+
+### Bug Fixes
+
+* Ship `py.typed`, so type checkers use the library's annotations.
+* `TokenStore(on_token_update=None)` is typed as optional, as it always was.
+
+
 ## v0.16.0 (2026-10-19, fork)
 
 ### Features

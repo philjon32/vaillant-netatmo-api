@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "vaillant-netatmo-api"
-version = "0.16.0"
+version = "0.16.1"
 authors = [
     { name = "Mislav Mandaric" },
 ]
@@ -47,3 +47,6 @@ line-length = 127
 # Pyflakes plus syntax errors only: the existing code predates any formatter, so
 # style rules would produce a noisy diff unrelated to behaviour.
 select = ["E9", "F"]
+
+[tool.setuptools.package-data]
+vaillant_netatmo_api = ["py.typed"]
