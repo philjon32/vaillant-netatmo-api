@@ -1,6 +1,18 @@
 # CHANGELOG
 
 
+## v0.16.0 (2026-10-19, fork)
+
+### Features
+
+* `async_set_home_data(..., therm_mode_end=...)` ends away or frost guard mode at a given time (`therm_mode_endtime`, verified live); `HomeState.therm_mode_end` reports it.
+* `async_get_home_states()` keeps working when getconfigs or getthermostatsdata fail: it uses the last good response and lists the source in `HomeState.stale_sources`. Token errors and rate limits still raise.
+
+### Bug Fixes
+
+* A 403 with Netatmo error code 26 (user usage reached) raises `RequestBackoffException` instead of `RequestForbiddenException`.
+
+
 ## v0.15.0 (2026-10-18, fork)
 
 ### Features

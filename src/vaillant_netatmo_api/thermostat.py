@@ -3,21 +3,31 @@
 from __future__ import annotations
 
 import json
+import logging
 
 from contextlib import asynccontextmanager
+from dataclasses import replace
 from datetime import datetime, time, timezone
 from enum import Enum
-from typing import AsyncGenerator, Callable
+from typing import AsyncGenerator, Awaitable, Callable
 
 from httpx import AsyncClient
 
 from .home import Home, SystemMode, ThermMode, TemperatureControlMode, ThermSetpointMode
 from .state import HeatingPriority, HomeState, ScheduleType, build_home_states, parse_enum
 from .base import BaseClient
-from .errors import NonOkResponseException, UnsuportedArgumentsException
+from .errors import (
+    ApiException,
+    NonOkResponseException,
+    RequestBackoffException,
+    RequestUnauthorizedException,
+    UnsuportedArgumentsException,
+)
 from .thermostat_auth import ThermostatAuth
 from .time import now
 from .token import Token, TokenStore
+
+_LOGGER = logging.getLogger(__name__)
 
 _HOMES_DATA_PATH = "api/homesdata"
 _HOME_STATUS_PATH = "syncapi/v1/homestatus"
@@ -81,6 +91,9 @@ class ThermostatClient(BaseClient):
 
         super().__init__(client, ThermostatAuth(token_store))
 
+        # Last good bodies of optional read endpoints, used when a request fails.
+        self._last_responses: dict[str, dict] = {}
+
     async def async_get_homes_data(self) -> list[Home]:
         """
         Get homes data from the Netatmo API.
@@ -111,11 +124,13 @@ class ThermostatClient(BaseClient):
         home_id: str,
         temperature_control_mode: TemperatureControlMode,
         therm_mode: ThermMode | None = None,
+        therm_mode_end: datetime | None = None,
     ) -> None:
         """
         Change the thermostat's system mode to the provided value.
 
-        On success, returns nothing. On error, throws an exception.
+        `therm_mode_end` ends an away or frost guard mode at the given time, after which
+        the home follows its schedule again. On success, returns nothing. On error, throws an exception.
         """
 
         path = _SET_HOME_DATA
@@ -129,6 +144,12 @@ class ThermostatClient(BaseClient):
 
         if therm_mode is not None:
             data["home"]["therm_mode"] = therm_mode.value
+        if therm_mode_end is not None:
+            if therm_mode not in (ThermMode.AWAY, ThermMode.HG):
+                raise UnsuportedArgumentsException(
+                    "An end time only applies to the away and frost guard modes.", therm_mode=therm_mode
+                )
+            data["home"]["therm_mode_endtime"] = round(therm_mode_end.timestamp())
 
         body = await self._post(
             path,
@@ -424,7 +445,11 @@ class ThermostatClient(BaseClient):
         """
         Get a typed snapshot of every home: structure, settings, schedules and live state.
 
-        Combines homesdata, homestatus and getconfigs for each home with getthermostatsdata. On error, throws an exception.
+        Combines homesdata, homestatus and getconfigs for each home with getthermostatsdata.
+        homesdata and homestatus are required; if getconfigs or getthermostatsdata fail for
+        any reason but an invalid token or a rate limit, the last good response is used
+        (or nothing before the first one) and the source is listed in `HomeState.stale_sources`.
+        On error of a required source, throws an exception.
         """
 
         homes_data = await self._async_post_ok(
@@ -432,24 +457,49 @@ class ThermostatClient(BaseClient):
             {"app_type": _VAILLANT_APP_ID, "app_identifier": _VAILLANT_APP_ID, "sync_measurements": True},
         )
 
+        stale: set[str] = set()
         statuses: dict[str, dict] = {}
         configs: dict[str, dict] = {}
         for home in homes_data.get("homes", []):
             request = {"home_id": home["id"], "app_identifier": _VAILLANT_APP_ID}
             statuses[home["id"]] = await self._async_post_ok(_HOME_STATUS_PATH, request)
-            configs[home["id"]] = await self._async_post_ok(_GET_CONFIGS_PATH, request)
+            configs[home["id"]] = await self._async_optional(
+                _GET_CONFIGS_PATH, f"{_GET_CONFIGS_PATH}:{home['id']}", stale,
+                lambda: self._async_post_ok(_GET_CONFIGS_PATH, request),
+            )
 
-        thermostats_data = await self._async_old_post_ok(
-            _GET_THERMOSTATS_DATA_PATH,
-            {
-                "device_type": _VAILLANT_DEVICE_TYPE,
-                # "full" adds the heating curve (house_model) and heating type.
-                "data_amount": "full",
-                "sync_device_id": _VAILLANT_SYNC_DEVICE_ID,
-            },
+        thermostats_data = await self._async_optional(
+            _GET_THERMOSTATS_DATA_PATH, _GET_THERMOSTATS_DATA_PATH, stale,
+            lambda: self._async_old_post_ok(
+                _GET_THERMOSTATS_DATA_PATH,
+                {
+                    "device_type": _VAILLANT_DEVICE_TYPE,
+                    # "full" adds the heating curve (house_model) and heating type.
+                    "data_amount": "full",
+                    "sync_device_id": _VAILLANT_SYNC_DEVICE_ID,
+                },
+            ),
         )
 
-        return build_home_states(homes_data, statuses, configs, thermostats_data)
+        homes = build_home_states(homes_data, statuses, configs, thermostats_data)
+        return [replace(home, stale_sources=frozenset(stale)) for home in homes]
+
+    async def _async_optional(
+        self, source: str, cache_key: str, stale: set[str], request: Callable[[], Awaitable[dict]]
+    ) -> dict:
+        """Return a fresh response body, or the last good one if the request fails."""
+
+        try:
+            body = await request()
+        except (RequestUnauthorizedException, RequestBackoffException):
+            raise
+        except (ApiException, NonOkResponseException) as err:
+            _LOGGER.warning("Using the last %s response; the request failed: %s", source, err.args[0] if err.args else err)
+            stale.add(source)
+            return self._last_responses.get(cache_key) or {}
+
+        self._last_responses[cache_key] = body or {}
+        return body or {}
 
     async def async_get_measures(
         self,

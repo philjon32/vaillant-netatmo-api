@@ -11,6 +11,8 @@ from httpx import codes, HTTPStatusError, NetworkError, Request, Response, Timeo
 # Netatmo error codes (the "error.code" field of an error response body) which mean
 # the access token itself is the problem. Any other 403 is a refused operation.
 TOKEN_ERROR_CODES = frozenset({2, 3})  # invalid access token, access token expired
+# Netatmo error codes which mean the client sends too many requests.
+RATE_LIMIT_ERROR_CODES = frozenset({26})  # user usage reached
 
 
 def netatmo_error_code(response: Response | None) -> int | None:
@@ -123,10 +125,10 @@ def client_error_handler() -> Generator[None]:
     except HTTPStatusError as e:
         if is_token_error(e.response):
             raise RequestUnauthorizedException("Access token is invalid or expired. Refresh the access token and try again.", e.request, e.response) from e
+        if e.response.status_code == codes.TOO_MANY_REQUESTS or netatmo_error_code(e.response) in RATE_LIMIT_ERROR_CODES:
+            raise RequestBackoffException("Client is sending too many requests. Reduce the frequency at which API is accessed and try again.", e.request, e.response) from e
         if e.response.status_code == codes.FORBIDDEN:
             raise RequestForbiddenException("Server refused to perform the operation. Retrying with a new access token will not help.", e.request, e.response) from e
-        if e.response.status_code == codes.TOO_MANY_REQUESTS:
-            raise RequestBackoffException("Client is sending too many requests. Reduce the frequency at which API is accessed and try again.", e.request, e.response)
         if codes.is_client_error(e.response.status_code):
             raise RequestClientException("Server processed the request and returned a 4xx response. Don't retry the request without changing the arguments as the new request will fail again with the same error.", e.request, e.response) from e
         if codes.is_server_error(e.response.status_code):

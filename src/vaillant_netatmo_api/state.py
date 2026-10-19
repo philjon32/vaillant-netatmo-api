@@ -226,6 +226,7 @@ class HomeState:
     name: str
     timezone: str | None
     therm_mode: ThermMode | None
+    therm_mode_end: datetime | None
     temperature_control_mode: TemperatureControlMode | None
     settings: HomeSettings
     rooms: list[Room]
@@ -233,6 +234,8 @@ class HomeState:
     boilers: list[Boiler]
     schedules: list[Schedule]
     linked_schedules: dict[str, str]
+    # Read endpoints whose last good response was used because the request failed.
+    stale_sources: frozenset[str] = frozenset()
 
     def room(self, room_id: str | None) -> Room | None:
         """Return the room with the given id."""
@@ -331,6 +334,7 @@ def _build_home(
         name=home.get("name", ""),
         timezone=home.get("timezone"),
         therm_mode=parse_enum(ThermMode, home.get("therm_mode")),
+        therm_mode_end=parse_timestamp(home.get("therm_mode_endtime")),
         temperature_control_mode=parse_enum(TemperatureControlMode, home.get("temperature_control_mode")),
         settings=HomeSettings(
             anticipation=home.get("anticipation"),

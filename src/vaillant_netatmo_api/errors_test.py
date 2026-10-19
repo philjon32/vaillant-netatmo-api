@@ -52,6 +52,16 @@ class TestErrors:
             with client_error_handler():
                 raise httpx.HTTPStatusError("test", request=request, response=response)
 
+    async def test_client_error_handler__user_usage_reached__raises_request_backoff_exception(self):
+        request = httpx.Request("POST", "https://api.netatmo.com/")
+
+        response = httpx.Response(403, request=request, json={"error": {"code": 26, "message": "User usage reached"}})
+        response.elapsed = timedelta()
+
+        with pytest.raises(RequestBackoffException):
+            with client_error_handler():
+                raise httpx.HTTPStatusError("test", request=request, response=response)
+
     async def test_client_error_handler__http_status_error_400__raises_request_client_exception(self):
         request = httpx.Request("POST", "https://api.netatmo.com/")
 

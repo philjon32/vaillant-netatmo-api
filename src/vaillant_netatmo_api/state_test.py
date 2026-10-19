@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+import httpx
 import pytest
 from respx import MockRouter
 
@@ -119,6 +120,16 @@ class TestBuildHomeStates:
         assert boiler.hot_water.setpoint_temperature is None
         assert home.rooms[0].measured_temperature is None
 
+    def test_away_end_time(self):
+        homes = load("homesdata")
+        homes["homes"][0]["therm_mode"] = "away"
+        homes["homes"][0]["therm_mode_endtime"] = 1792393595
+
+        [home] = build_home_states(homes, {}, {}, {})
+
+        assert home.therm_mode == ThermMode.AWAY
+        assert home.therm_mode_end == datetime.fromtimestamp(1792393595, timezone.utc)
+
     def test_unknown_values_do_not_raise(self):
         homes = load("homesdata")
         homes["homes"][0]["therm_mode"] = "something_new"
@@ -178,6 +189,69 @@ class TestClient:
             [home] = await client.async_get_home_states()
 
         assert home.boilers[0].hot_water.setpoint_temperature == 45
+
+    async def test_async_get_home_states__optional_source_fails__uses_last_good_response(self, respx_mock: MockRouter):
+        respx_mock.post("https://app.netatmo.net/api/homesdata").respond(200, json={"status": "ok", "body": load("homesdata")})
+        respx_mock.post("https://app.netatmo.net/syncapi/v1/homestatus").respond(200, json={"status": "ok", "body": load("homestatus")})
+        configs = respx_mock.post("https://app.netatmo.net/syncapi/v1/getconfigs")
+        configs.side_effect = [
+            httpx.Response(200, json={"status": "ok", "body": load("getconfigs")}),
+            httpx.Response(400, json={"error": {"code": 21, "message": "Invalid argument"}}),
+        ]
+        respx_mock.post("https://api.netatmo.com/api/getthermostatsdata").respond(200, json={"status": "failed"})
+
+        async with thermostat_client("", "", token, None) as client:
+            [first] = await client.async_get_home_states()
+            [second] = await client.async_get_home_states()
+
+        assert first.stale_sources == {"api/getthermostatsdata"}
+        assert first.boilers[0].heating_curve is None
+        assert second.stale_sources == {"api/getthermostatsdata", "syncapi/v1/getconfigs"}
+        assert second.boilers[0].hot_water.always_on is first.boilers[0].hot_water.always_on is False
+
+    async def test_async_get_home_states__required_source_fails__raises(self, respx_mock: MockRouter):
+        from vaillant_netatmo_api.errors import RequestClientException
+
+        respx_mock.post("https://app.netatmo.net/api/homesdata").respond(200, json={"status": "ok", "body": load("homesdata")})
+        respx_mock.post("https://app.netatmo.net/syncapi/v1/homestatus").respond(400)
+
+        async with thermostat_client("", "", token, None) as client:
+            with pytest.raises(RequestClientException):
+                await client.async_get_home_states()
+
+    async def test_async_get_home_states__rate_limited_optional_source__raises(self, respx_mock: MockRouter):
+        from vaillant_netatmo_api.errors import RequestBackoffException
+
+        respx_mock.post("https://app.netatmo.net/api/homesdata").respond(200, json={"status": "ok", "body": load("homesdata")})
+        respx_mock.post("https://app.netatmo.net/syncapi/v1/homestatus").respond(200, json={"status": "ok", "body": load("homestatus")})
+        respx_mock.post("https://app.netatmo.net/syncapi/v1/getconfigs").respond(
+            403, json={"error": {"code": 26, "message": "User usage reached"}}
+        )
+
+        async with thermostat_client("", "", token, None) as client:
+            with pytest.raises(RequestBackoffException):
+                await client.async_get_home_states()
+
+    async def test_async_set_home_data__away_until__sends_end_time(self, respx_mock: MockRouter):
+        route = respx_mock.post("https://app.netatmo.net/api/sethomedata").respond(200, json={"status": "ok"})
+        end = datetime(2026, 10, 25, 18, 0, tzinfo=BRUSSELS)
+
+        async with thermostat_client("", "", token, None) as client:
+            await client.async_set_home_data(HOME_ID, TemperatureControlMode.HEATING, ThermMode.AWAY, end)
+
+        assert json.loads(route.calls.last.request.content)["home"] == {
+            "id": HOME_ID, "temperature_control_mode": "heating", "therm_mode": "away",
+            "therm_mode_endtime": round(end.timestamp()),
+        }
+
+    async def test_async_set_home_data__end_time_with_schedule__raises(self):
+        from vaillant_netatmo_api.errors import UnsuportedArgumentsException
+
+        async with thermostat_client("", "", token, None) as client:
+            with pytest.raises(UnsuportedArgumentsException):
+                await client.async_set_home_data(
+                    HOME_ID, TemperatureControlMode.HEATING, ThermMode.SCHEDULE, datetime.now(timezone.utc)
+                )
 
     async def test_async_get_measures__several_types__splits_values_per_type(self, respx_mock: MockRouter):
         route = respx_mock.post("https://api.netatmo.com/api/getmeasure").respond(200, json={
