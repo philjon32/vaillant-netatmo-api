@@ -171,7 +171,8 @@ class HotWater:
     max_temperature: float | None
     always_on: bool | None
     enabled: bool | None
-    boost_active: bool
+    # From getthermostatsdata only; None while it has not reported the boiler.
+    boost_active: bool | None
     boost_end: datetime | None
     control: str | None
 
@@ -209,8 +210,9 @@ class Boiler:
     boiler_errors: list[Any]
     boiler_error: bool
     ebus_error: bool
-    maintenance_due: bool
-    refill_water: bool
+    # From getthermostatsdata only; None while it has not reported the boiler.
+    maintenance_due: bool | None
+    refill_water: bool | None
     energy_metering: bool
     heating_type: str | None
     heating_curve: HeatingCurve | None
@@ -392,10 +394,10 @@ def _build_thermostat(module: dict, status: dict, old: dict, rooms: list[Room]) 
 
 
 def _build_boiler(module: dict, status: dict, config: dict, device: dict) -> Boiler:
-    ebus = device.get("ebus_status", {})
-    hwb = device.get("setpoint_hwb", {})
+    ebus = device.get("ebus_status")
+    hwb = device.get("setpoint_hwb")
     boiler_errors = status.get("boiler_error", device.get("boiler_error")) or []
-    boost_end = parse_timestamp(hwb.get("setpoint_endtime"))
+    boost_end = parse_timestamp((hwb or {}).get("setpoint_endtime"))
 
     return Boiler(
         id=module["id"],
@@ -410,11 +412,11 @@ def _build_boiler(module: dict, status: dict, config: dict, device: dict) -> Boi
         wifi_strength=status.get("wifi_strength", device.get("wifi_status")),
         rf_strength=status.get("rf_strength", device.get("rf_amb_status")),
         boiler_errors=list(boiler_errors),
-        boiler_error=bool(boiler_errors) or bool(ebus.get("boiler_error")),
-        ebus_error=bool(status.get("ebus_error", ebus.get("ebus_error"))),
-        maintenance_due=bool(ebus.get("maintenance_status")),
-        refill_water=bool(ebus.get("refill_water")),
-        energy_metering=bool(status.get("emf_avail", ebus.get("emf_avail"))),
+        boiler_error=bool(boiler_errors) or bool((ebus or {}).get("boiler_error")),
+        ebus_error=bool(status.get("ebus_error", (ebus or {}).get("ebus_error"))),
+        maintenance_due=None if ebus is None else bool(ebus.get("maintenance_status")),
+        refill_water=None if ebus is None else bool(ebus.get("refill_water")),
+        energy_metering=bool(status.get("emf_avail", (ebus or {}).get("emf_avail"))),
         heating_type=device.get("heating_system", {}).get("heating_type"),
         heating_curve=_build_heating_curve(device.get("house_model", {})),
         system_mode=parse_enum(SystemMode, device.get("system_mode")),
@@ -424,8 +426,8 @@ def _build_boiler(module: dict, status: dict, config: dict, device: dict) -> Boi
             max_temperature=config.get("dhw_temperature_max", device.get("dhw_max")),
             always_on=config.get("dhw_always_on"),
             enabled=status.get("dhw_enabled", device.get("dhw_enabled")),
-            boost_active=bool(hwb.get("setpoint_activate")),
-            boost_end=boost_end if hwb.get("setpoint_activate") else None,
+            boost_active=None if hwb is None else bool(hwb.get("setpoint_activate")),
+            boost_end=boost_end if hwb and hwb.get("setpoint_activate") else None,
             control=module.get("dhw_control", device.get("dhw_control")),
         ),
     )

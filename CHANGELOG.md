@@ -1,6 +1,12 @@
 # CHANGELOG
 
 
+## v0.17.0 (2026-10-31, fork)
+
+### Breaking Changes
+
+* `Boiler.maintenance_due`, `Boiler.refill_water` and `HotWater.boost_active` are `None` instead of `False` while getthermostatsdata has not reported the boiler (it never succeeded, or does not list it), so a missing source no longer reads as "no problem".
+
 ## v0.16.1 (2026-10-19, fork)
 
 ### Bug Fixes

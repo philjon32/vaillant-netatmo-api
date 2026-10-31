@@ -119,6 +119,8 @@ class TestBuildHomeStates:
         [boiler] = home.boilers
         assert boiler.hot_water.setpoint_temperature is None
         assert home.rooms[0].measured_temperature is None
+        # Unknown, not "no problem": only getthermostatsdata reports these.
+        assert (boiler.maintenance_due, boiler.refill_water, boiler.hot_water.boost_active) == (None,) * 3
 
     def test_away_end_time(self):
         homes = load("homesdata")
