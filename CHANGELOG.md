@@ -1,6 +1,12 @@
 # CHANGELOG
 
 
+## v0.18.0 (2026-11-17, fork)
+
+### Breaking Changes
+
+* The library uses [httpx2](https://pypi.org/project/httpx2/) instead of httpx: the clients take an `httpx2.AsyncClient`, which Home Assistant 2026.11 provides (it aliases `httpx` to `httpx2`). Under Home Assistant nothing changes at runtime: `httpx` already resolves to `httpx2` there.
+
 ## v0.17.0 (2026-10-31, fork)
 
 ### Breaking Changes
