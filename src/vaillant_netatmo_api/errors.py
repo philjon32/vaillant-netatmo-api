@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from re import sub
 from typing import Generator
 
-from httpx import codes, HTTPStatusError, NetworkError, Request, Response, TimeoutException
+from httpx2 import codes, HTTPStatusError, NetworkError, Request, Response, TimeoutException
 
 # Netatmo error codes (the "error.code" field of an error response body) which mean
 # the access token itself is the problem. Any other 403 is a refused operation.

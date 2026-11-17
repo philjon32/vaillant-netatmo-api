@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from httpx import AsyncClient, Auth
+from httpx2 import AsyncClient, Auth
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, stop_after_delay, wait_random_exponential
 
 from .errors import RetryableException, client_error_handler
@@ -15,7 +15,7 @@ class BaseClient:
     """
     Base client for making HTTP requests to the Netatmo API.
 
-    Uses the constructor provided AsyncClient and Auth from httpx to make authenticated requests. The provided AsyncClient should be used as a singleton for making all requests to allow efficient connection pool management.
+    Uses the constructor provided AsyncClient and Auth from httpx2 to make authenticated requests. The provided AsyncClient should be used as a singleton for making all requests to allow efficient connection pool management.
     """
 
     def __init__(
@@ -40,7 +40,7 @@ class BaseClient:
     )
     async def _old_post(self, path: str, data: dict = None, json: dict = None) -> dict:
         """
-        Makes post request using the underlying httpx AsyncClient, with the defaut timeout of 15s.
+        Makes post request using the underlying httpx2 AsyncClient, with the defaut timeout of 15s.
 
         In case of retryable exceptions, requests are retryed for up to 10 times or 5 minutes.
         """
@@ -65,7 +65,7 @@ class BaseClient:
     )
     async def _post(self, path: str, data: dict = None, json: dict = None) -> dict:
         """
-        Makes post request using the underlying httpx AsyncClient, with the defaut timeout of 15s.
+        Makes post request using the underlying httpx2 AsyncClient, with the defaut timeout of 15s.
 
         In case of retryable exceptions, requests are retryed for up to 10 times or 5 minutes.
         """

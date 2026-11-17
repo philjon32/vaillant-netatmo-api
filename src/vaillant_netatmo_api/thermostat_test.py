@@ -1,4 +1,4 @@
-import httpx
+import httpx2
 import pytest
 
 from datetime import datetime
@@ -183,8 +183,8 @@ class TestThermostat:
 
     async def test_async_get_thermostats_data__unauthorized_errors__succeed_after_refreshing_token(self, respx_mock: MockRouter):
         respx_mock.post("https://api.netatmo.com/api/getthermostatsdata", data=get_thermostats_data_request).mock(side_effect=[
-            httpx.Response(500),
-            httpx.Response(200, json=get_thermostats_data_response),
+            httpx2.Response(500),
+            httpx2.Response(200, json=get_thermostats_data_response),
         ])
 
         async with thermostat_client("", "", token, None) as client:
@@ -260,8 +260,8 @@ class TestThermostat:
 
     async def test_async_sync_schedule__server_errors__retry_until_success(self, respx_mock: MockRouter):
         respx_mock.post("https://api.netatmo.com/api/syncschedule", data=sync_schedule_request).mock(side_effect=[
-            httpx.Response(500),
-            httpx.Response(200, json=sync_schedule_response),
+            httpx2.Response(500),
+            httpx2.Response(200, json=sync_schedule_response),
         ])
 
         async with thermostat_client("", "", token, None) as client:
@@ -304,8 +304,8 @@ class TestThermostat:
 
     async def test_async_switch_schedule__server_errors__retry_until_success(self, respx_mock: MockRouter):
         respx_mock.post("https://api.netatmo.com/api/switchschedule", data=switch_schedule_request).mock(side_effect=[
-            httpx.Response(500),
-            httpx.Response(200, json=switch_schedule_response),
+            httpx2.Response(500),
+            httpx2.Response(200, json=switch_schedule_response),
         ])
 
         async with thermostat_client("", "", token, None) as client:
@@ -341,8 +341,8 @@ class TestThermostat:
 
     async def test_async_set_hot_water_temperature__server_errors__retry_until_success(self, respx_mock: MockRouter):
         respx_mock.post("https://api.netatmo.com/api/sethotwatertemperature", data=async_set_hot_water_temperature_request).mock(side_effect=[
-            httpx.Response(500),
-            httpx.Response(200, json=async_set_hot_water_temperature_response),
+            httpx2.Response(500),
+            httpx2.Response(200, json=async_set_hot_water_temperature_response),
         ])
 
         async with thermostat_client("", "", token, None) as client:
@@ -376,8 +376,8 @@ class TestThermostat:
 
     async def test_async_modify_device_param__server_errors__retry_until_success(self, respx_mock: MockRouter):
         respx_mock.post("https://api.netatmo.com/api/modifydeviceparam", data=async_modify_device_param_request).mock(side_effect=[
-            httpx.Response(500),
-            httpx.Response(200, json=async_modify_device_param_response),
+            httpx2.Response(500),
+            httpx2.Response(200, json=async_modify_device_param_response),
         ])
 
         async with thermostat_client("", "", token, None) as client:

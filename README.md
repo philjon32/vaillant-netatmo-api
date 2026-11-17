@@ -28,7 +28,7 @@ Python 3 library for managing Vaillant thermostats using the Netatmo API. It pro
 
 See the top of this file.
 
-Library requires Python 3 and has [tenacity](https://github.com/jd/tenacity) and [httpx](https://github.com/encode/httpx) dependencies.
+Library requires Python 3 and has [tenacity](https://github.com/jd/tenacity) and [httpx2](https://pypi.org/project/httpx2/) dependencies (Home Assistant uses httpx2 in place of httpx since 2026.11).
 
 ## Usage
 
@@ -95,9 +95,9 @@ async with thermostat_client(CLIENT_ID, CLIENT_SECRET, token, handle_token_updat
 
 Even though library offers context manager for using `AuthClient` and `ThermostatClient`, this should only be done during development or in very infrequent usage scenarios.
 
-Both of the clients use `httpx.AsyncClient` as the underlying HTTP communication library, which implements connection pooling and connection reuse. This means doing multiple concurent requests should be done by using the same instance of the `AuthClient` or `ThermostatClient`, which is not possible by using the context manager API since this API will return new instance of the client every time `auth_client` or `thermostat_client` method is called.
+Both of the clients use `httpx2.AsyncClient` as the underlying HTTP communication library, which implements connection pooling and connection reuse. This means doing multiple concurent requests should be done by using the same instance of the `AuthClient` or `ThermostatClient`, which is not possible by using the context manager API since this API will return new instance of the client every time `auth_client` or `thermostat_client` method is called.
 
-To achieve optimal usage, which will utilize connection pooling and connection reuse, both `AuthClient` and `ThermostatClient` should be used by instantiating the clients and providing `httpx.AsyncClient` instance in a constructor. This provided client should be used as singleton, or with some other context management mechanism, with the context wider than one block of code or one inbound request.
+To achieve optimal usage, which will utilize connection pooling and connection reuse, both `AuthClient` and `ThermostatClient` should be used by instantiating the clients and providing `httpx2.AsyncClient` instance in a constructor. This provided client should be used as singleton, or with some other context management mechanism, with the context wider than one block of code or one inbound request.
 
 Here is an example for usage in Home Assistant.
 

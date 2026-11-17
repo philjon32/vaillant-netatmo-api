@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Generator
 from urllib.parse import urlencode
 
-from httpx import Auth, Headers, Request, Response
+from httpx2 import Auth, Headers, Request, Response
 
 from .errors import RequestUnauthorizedException, is_token_error
 from .token import Token, TokenStore
@@ -13,7 +13,7 @@ _TOKEN_PATH = "/oauth2/token"
 
 class ThermostatAuth(Auth):
     """
-    Thermostat client's Auth implementation of the httpx auth middleware.
+    Thermostat client's Auth implementation of the httpx2 auth middleware.
 
     For each request appends access token to the request body and handles refreshing access token after it expires.
     """

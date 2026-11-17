@@ -11,7 +11,7 @@ from datetime import datetime, time, timezone
 from enum import Enum
 from typing import AsyncGenerator, Awaitable, Callable
 
-from httpx import AsyncClient
+from httpx2 import AsyncClient
 
 from .home import Home, SystemMode, ThermMode, TemperatureControlMode, ThermSetpointMode
 from .state import HeatingPriority, HomeState, ScheduleType, build_home_states, parse_enum

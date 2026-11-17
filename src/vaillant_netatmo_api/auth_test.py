@@ -1,4 +1,4 @@
-import httpx
+import httpx2
 import pytest
 
 from pytest_mock import MockerFixture
@@ -38,8 +38,8 @@ class TestAuth:
 
     async def test_async_get_token__server_errors__retry_until_success(self, respx_mock: MockRouter, mocker: MockerFixture):
         respx_mock.post("https://app.netatmo.net/oauth2/token", data=get_token_request).mock(side_effect=[
-            httpx.Response(500),
-            httpx.Response(200, json=get_token_response),
+            httpx2.Response(500),
+            httpx2.Response(200, json=get_token_response),
         ])
 
         on_token_update_stub = mocker.stub()

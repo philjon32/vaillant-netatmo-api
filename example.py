@@ -3,7 +3,7 @@
 import asyncio
 import os
 
-from httpx import AsyncClient
+from httpx2 import AsyncClient
 from dotenv import load_dotenv
 
 from src.vaillant_netatmo_api import AuthClient, ThermostatClient, TokenStore, Token

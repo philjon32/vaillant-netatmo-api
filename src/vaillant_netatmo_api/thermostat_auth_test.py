@@ -1,4 +1,4 @@
-import httpx
+import httpx2
 import pytest
 
 from respx import MockRouter
@@ -105,6 +105,6 @@ class TestTokenErrorDetection:
         ],
     )
     async def test_is_token_error(self, status, body, expected):
-        response = httpx.Response(status, json=body) if body is not None else httpx.Response(status)
+        response = httpx2.Response(status, json=body) if body is not None else httpx2.Response(status)
 
         assert is_token_error(response) is expected

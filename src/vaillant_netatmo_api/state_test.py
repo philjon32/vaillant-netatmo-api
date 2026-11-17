@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-import httpx
+import httpx2
 import pytest
 from respx import MockRouter
 
@@ -197,8 +197,8 @@ class TestClient:
         respx_mock.post("https://app.netatmo.net/syncapi/v1/homestatus").respond(200, json={"status": "ok", "body": load("homestatus")})
         configs = respx_mock.post("https://app.netatmo.net/syncapi/v1/getconfigs")
         configs.side_effect = [
-            httpx.Response(200, json={"status": "ok", "body": load("getconfigs")}),
-            httpx.Response(400, json={"error": {"code": 21, "message": "Invalid argument"}}),
+            httpx2.Response(200, json={"status": "ok", "body": load("getconfigs")}),
+            httpx2.Response(400, json={"error": {"code": 21, "message": "Invalid argument"}}),
         ]
         respx_mock.post("https://api.netatmo.com/api/getthermostatsdata").respond(200, json={"status": "failed"})
 

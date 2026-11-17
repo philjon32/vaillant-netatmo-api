@@ -2,7 +2,7 @@ import json
 
 from datetime import datetime, timedelta, timezone
 
-import httpx
+import httpx2
 import pytest
 
 from respx import MockRouter
@@ -93,8 +93,8 @@ class TestThermostatHome:
 
     async def test_async_get_homes_data__unauthorized_errors__succeed_after_refreshing_token(self, respx_mock: MockRouter):
         respx_mock.post("https://app.netatmo.net/api/homesdata", json=get_homes_data_request, headers={("authorization", "Bearer 12345")}).mock(side_effect=[
-            httpx.Response(500),
-            httpx.Response(200, json=get_homes_data_response),
+            httpx2.Response(500),
+            httpx2.Response(200, json=get_homes_data_response),
         ])
 
         async with thermostat_client("", "", token, None) as client:

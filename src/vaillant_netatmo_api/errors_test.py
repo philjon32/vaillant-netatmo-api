@@ -1,4 +1,4 @@
-import httpx
+import httpx2
 import pytest
 
 from datetime import timedelta
@@ -9,96 +9,96 @@ from vaillant_netatmo_api.errors import ApiException, NetworkException, RequestB
 @pytest.mark.asyncio
 class TestErrors:
     async def test_client_error_handler__timeout_exception__raises_network_timeout_exception(self):
-        request = httpx.Request("POST", "https://api.netatmo.com/")
+        request = httpx2.Request("POST", "https://api.netatmo.com/")
 
         with pytest.raises(NetworkTimeoutException):
             with client_error_handler():
-                raise httpx.TimeoutException("test", request=request)
+                raise httpx2.TimeoutException("test", request=request)
 
     async def test_client_error_handler__network_error__raises_network_exception(self):
-        request = httpx.Request("POST", "https://api.netatmo.com/")
+        request = httpx2.Request("POST", "https://api.netatmo.com/")
 
         with pytest.raises(NetworkException):
             with client_error_handler():
-                raise httpx.NetworkError("test", request=request)
+                raise httpx2.NetworkError("test", request=request)
 
     async def test_client_error_handler__http_status_error_401__raises_request_unauthorized_exception(self):
-        request = httpx.Request("POST", "https://api.netatmo.com/")
+        request = httpx2.Request("POST", "https://api.netatmo.com/")
 
-        response = httpx.Response(401, request=request)
+        response = httpx2.Response(401, request=request)
         response.elapsed = timedelta()
 
         with pytest.raises(RequestUnauthorizedException):
             with client_error_handler():
-                raise httpx.HTTPStatusError("test", request=request, response=response)
+                raise httpx2.HTTPStatusError("test", request=request, response=response)
 
     async def test_client_error_handler__http_status_error_403__raises_request_unauthorized_exception(self):
-        request = httpx.Request("POST", "https://api.netatmo.com/")
+        request = httpx2.Request("POST", "https://api.netatmo.com/")
 
-        response = httpx.Response(403, request=request)
+        response = httpx2.Response(403, request=request)
         response.elapsed = timedelta()
 
         with pytest.raises(RequestUnauthorizedException):
             with client_error_handler():
-                raise httpx.HTTPStatusError("test", request=request, response=response)
+                raise httpx2.HTTPStatusError("test", request=request, response=response)
 
     async def test_client_error_handler__http_status_error_429__raises_request_backoff_exception(self):
-        request = httpx.Request("POST", "https://api.netatmo.com/")
+        request = httpx2.Request("POST", "https://api.netatmo.com/")
 
-        response = httpx.Response(429, request=request)
+        response = httpx2.Response(429, request=request)
         response.elapsed = timedelta()
 
         with pytest.raises(RequestBackoffException):
             with client_error_handler():
-                raise httpx.HTTPStatusError("test", request=request, response=response)
+                raise httpx2.HTTPStatusError("test", request=request, response=response)
 
     async def test_client_error_handler__user_usage_reached__raises_request_backoff_exception(self):
-        request = httpx.Request("POST", "https://api.netatmo.com/")
+        request = httpx2.Request("POST", "https://api.netatmo.com/")
 
-        response = httpx.Response(403, request=request, json={"error": {"code": 26, "message": "User usage reached"}})
+        response = httpx2.Response(403, request=request, json={"error": {"code": 26, "message": "User usage reached"}})
         response.elapsed = timedelta()
 
         with pytest.raises(RequestBackoffException):
             with client_error_handler():
-                raise httpx.HTTPStatusError("test", request=request, response=response)
+                raise httpx2.HTTPStatusError("test", request=request, response=response)
 
     async def test_client_error_handler__http_status_error_400__raises_request_client_exception(self):
-        request = httpx.Request("POST", "https://api.netatmo.com/")
+        request = httpx2.Request("POST", "https://api.netatmo.com/")
 
-        response = httpx.Response(400, request=request)
+        response = httpx2.Response(400, request=request)
         response.elapsed = timedelta()
 
         with pytest.raises(RequestClientException):
             with client_error_handler():
-                raise httpx.HTTPStatusError("test", request=request, response=response)
+                raise httpx2.HTTPStatusError("test", request=request, response=response)
 
     async def test_client_error_handler__http_status_error_500__raises_request_server_exception(self):
-        request = httpx.Request("POST", "https://api.netatmo.com/")
+        request = httpx2.Request("POST", "https://api.netatmo.com/")
 
-        response = httpx.Response(500, request=request)
+        response = httpx2.Response(500, request=request)
         response.elapsed = timedelta()
 
         with pytest.raises(RequestServerException):
             with client_error_handler():
-                raise httpx.HTTPStatusError("test", request=request, response=response)
+                raise httpx2.HTTPStatusError("test", request=request, response=response)
 
     async def test_client_error_handler__http_status_error_600__raises_request_exception(self):
-        request = httpx.Request("POST", "https://api.netatmo.com/")
+        request = httpx2.Request("POST", "https://api.netatmo.com/")
 
-        response = httpx.Response(600, request=request)
+        response = httpx2.Response(600, request=request)
         response.elapsed = timedelta()
 
         with pytest.raises(RequestException):
             with client_error_handler():
-                raise httpx.HTTPStatusError("test", request=request, response=response)
+                raise httpx2.HTTPStatusError("test", request=request, response=response)
 
 
 @pytest.mark.asyncio
 class TestApiException:
     async def test_init__with_access_token_and_password_content__sanitizes_request_content(self):
-        request = httpx.Request("POST", "https://api.netatmo.com/", content="a=b&access_token=nesto&c=d&password=drugo")
+        request = httpx2.Request("POST", "https://api.netatmo.com/", content="a=b&access_token=nesto&c=d&password=drugo")
 
-        response = httpx.Response(500, request=request, content="response")
+        response = httpx2.Response(500, request=request, content="response")
         response.elapsed = timedelta()
 
         with pytest.raises(ApiException) as ex:
@@ -109,23 +109,23 @@ class TestApiException:
 @pytest.mark.asyncio
 class TestForbiddenErrors:
     async def test_client_error_handler__403_operation_forbidden__raises_request_forbidden_exception(self):
-        request = httpx.Request("POST", "https://api.netatmo.com/")
+        request = httpx2.Request("POST", "https://api.netatmo.com/")
 
-        response = httpx.Response(403, request=request, json={"error": {"code": 13, "message": "Operation is forbidden"}})
+        response = httpx2.Response(403, request=request, json={"error": {"code": 13, "message": "Operation is forbidden"}})
         response.elapsed = timedelta()
 
         with pytest.raises(RequestForbiddenException) as err:
             with client_error_handler():
-                raise httpx.HTTPStatusError("test", request=request, response=response)
+                raise httpx2.HTTPStatusError("test", request=request, response=response)
 
         assert err.value.error_code == 13
 
     async def test_client_error_handler__403_token_expired__raises_request_unauthorized_exception(self):
-        request = httpx.Request("POST", "https://api.netatmo.com/")
+        request = httpx2.Request("POST", "https://api.netatmo.com/")
 
-        response = httpx.Response(403, request=request, json={"error": {"code": 3, "message": "Access token expired"}})
+        response = httpx2.Response(403, request=request, json={"error": {"code": 3, "message": "Access token expired"}})
         response.elapsed = timedelta()
 
         with pytest.raises(RequestUnauthorizedException):
             with client_error_handler():
-                raise httpx.HTTPStatusError("test", request=request, response=response)
+                raise httpx2.HTTPStatusError("test", request=request, response=response)
